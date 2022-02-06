@@ -1,5 +1,17 @@
-# HandBrake [![macOS Build](https://github.com/HandBrake/HandBrake/workflows/macOS%20build/badge.svg)](https://github.com/HandBrake/HandBrake/actions?query=workflow%3A%22macOS+build%22) [![Windows Build](https://github.com/HandBrake/HandBrake/workflows/Windows%20Build/badge.svg)](https://github.com/HandBrake/HandBrake/actions?query=workflow%3A%22Windows+Build%22) [![Linux Build](https://github.com/HandBrake/HandBrake/workflows/Linux%20Build/badge.svg)](https://github.com/HandBrake/HandBrake/actions?query=workflow%3A%22Linux+Build%22)
+# Hack to force hard CBR for streaming
+The main HandBreak project does not produce constant bitrate H264 that satisfies my streaming needs.
+This fork overrides some parameters to improve CBR performance, only when Hanbrake is set to use CBR.
 
+    param.i_keyint_min *= 3;                          //Keyint to fps x 3
+    param.i_keyint_max = param.i_keyint_min;
+    param.i_scenecut_threshold = 0;
+    param.i_nal_hrd = X264_NAL_HRD_CBR;               // Hard CBR
+    param.rc.i_vbv_max_bitrate = job->vbitrate;       // Set to average bitrate
+    param.rc.i_vbv_buffer_size = job->vbitrate * 2;   // Set to 2 x bitrate
+    param.rc.i_lookahead = param.i_keyint_min;        // Lookahead set to 3 x fps
+
+
+# HandBrake [![macOS Build](https://github.com/HandBrake/HandBrake/workflows/macOS%20build/badge.svg)](https://github.com/HandBrake/HandBrake/actions?query=workflow%3A%22macOS+build%22) [![Windows Build](https://github.com/HandBrake/HandBrake/workflows/Windows%20Build/badge.svg)](https://github.com/HandBrake/HandBrake/actions?query=workflow%3A%22Windows+Build%22) [![Linux Build](https://github.com/HandBrake/HandBrake/workflows/Linux%20Build/badge.svg)](https://github.com/HandBrake/HandBrake/actions?query=workflow%3A%22Linux+Build%22)
 
 HandBrake is an open-source video transcoder available for Linux, Mac, and Windows, licensed under the [GNU General Public License (GPL) Version 2](LICENSE).
 
