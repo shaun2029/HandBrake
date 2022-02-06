@@ -393,6 +393,28 @@ int encx264Init( hb_work_object_t * w, hb_job_t * job )
     param.i_keyint_min = (double)job->orig_vrate.num / job->orig_vrate.den +
                                  0.5;
     param.i_keyint_max = 10 * param.i_keyint_min;
+    
+
+if (job->vquality <= HB_INVALID_VIDEO_QUALITY) {
+    // x264 parameter overrides for CBR
+    hb_log( "encx264: Overriding for CBR encoding!");
+    param.i_keyint_min *= 3;
+    param.i_keyint_max = param.i_keyint_min;
+    param.i_scenecut_threshold = 0;
+    param.i_nal_hrd = X264_NAL_HRD_CBR;
+    param.rc.i_vbv_max_bitrate = job->vbitrate;
+    param.rc.i_vbv_buffer_size = job->vbitrate * 2;
+    param.rc.i_lookahead = param.i_keyint_min;
+    
+    hb_log( "encx264: Override keyint=%d", param.i_keyint_min );    
+    hb_log( "encx264: Override i_scenecut_threshold=%d", param.i_scenecut_threshold );    
+    hb_log( "encx264: Override nal_hrd=CBR (%d)", param.i_nal_hrd );    
+    hb_log( "encx264: Override i_vbv_max_bitrate=%d", param.rc.i_vbv_max_bitrate );    
+    hb_log( "encx264: Override i_vbv_buffer_size=%d", param.rc.i_vbv_buffer_size );    
+    hb_log( "encx264: Override i_lookahead=%d", param.rc.i_lookahead );    
+
+}
+    
     param.i_log_level  = X264_LOG_INFO;
 
     /* set up the VUI color model & gamma */
@@ -605,6 +627,21 @@ int encx264Init( hb_work_object_t * w, hb_job_t * job )
     {
         job->areBframes = 1;
     }
+
+hb_log("x264_params [info]: i_scenecut_threshold=%d", param.i_scenecut_threshold);    
+
+if (param.i_nal_hrd == X264_NAL_HRD_CBR) {
+  hb_log("x264_params [info]: nal_hrd=cbr");    
+}
+
+hb_log("x264_params [info]: ref %s", hb_value_get_string_xform(hb_value_int(param.i_frame_reference)));
+hb_log("x264_params [info]: scenecut_threshold %s", hb_value_get_string_xform(hb_value_int(param.i_scenecut_threshold)));
+hb_log("x264_params [info]: bframes %s", hb_value_get_string_xform(hb_value_int(param.i_bframe)));
+hb_log("x264_params [info]: vbv-maxrate %s", hb_value_get_string_xform(hb_value_int(param.rc.i_vbv_max_bitrate)));
+hb_log("x264_params [info]: vbv-bufsize %s", hb_value_get_string_xform(hb_value_int(param.rc.i_vbv_buffer_size)));
+hb_log("x264_params [info]: rc-lookahead %s", hb_value_get_string_xform(hb_value_int(param.rc.i_lookahead)));
+hb_log("x264_params [info]: me %s", hb_value_get_string_xform(hb_value_string(x264_motion_est_names[param.analyse.i_me_method])));
+hb_log("x264_params [info]: merange %s", hb_value_get_string_xform(hb_value_int(param.analyse.i_me_range)));
 
     /* Log the unparsed x264 options string. */
     char *x264_opts_unparsed = hb_x264_param_unparse(pv->api->bit_depth,
